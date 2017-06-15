@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须为指定的Mapper接口的地址  -->
+<mapper namespace="com.darren.ssm.dao.EmpMapper">
+
+	<!-- id:对应的是接口中的方法名;返回值类型为对应pojo的类 -->
+	<select id="queryAll" resultType="emp">
+		<!-- 需要映射的SQL语句 -->
+		select * from emp
+	</select>
+	
+	<insert id="addEmp" parameterType="emp">
+		insert into emp values (#{ename},#{sex},#{did})
+	</insert>
+	
+</mapper>

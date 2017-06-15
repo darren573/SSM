@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd 
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd ">
+	<!--加载jdbc.properties属性文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+       	<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="url" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+		<property name="maxActive" value="30"/>
+		<property name="maxIdle" value="5"/>
+	</bean>	
+	<!-- 配置SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+			<!-- 数据库连接池 -->
+			<property name="dataSource" ref="dataSource" />
+			<!-- 加载mybatis的全局配置文件 -->
+			<property name="configLocation" value="classpath:mybatis-config.xml" />
+	</bean>
+	<!-- 配置Mapper扫描器 -->
+	<!-- mapper扫描器 (扫描该包下的所有mapper，放入spring容器中)-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+	 	<property name="basePackage" value="com.darren.ssm.dao"></property>
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+	</bean>
+	<!-- 配置事务 -->
+	<!-- 事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 数据源 -->
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	<!-- 通知 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+	  <tx:attributes>
+	     <!-- 传播行为 -->
+	    <tx:method name="add*" propagation="REQUIRED"/>
+	    <tx:method name="del*" propagation="REQUIRED"/>
+	    <tx:method name="upd*" propagation="REQUIRED"/>
+	    <tx:method name="sel*" propagation="SUPPORTS" read-only="true"/>
+	    <tx:method name="*" propagation="SUPPORTS" read-only="true"/>
+	  </tx:attributes>
+	</tx:advice>
+	<!-- 切面 -->
+	<aop:config>
+	  <aop:advisor advice-ref="txAdvice"
+	  pointcut="execution(* com.darren.ssm.service.*.*(..))"/>
+	</aop:config>
+</beans>
